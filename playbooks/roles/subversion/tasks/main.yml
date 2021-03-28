@@ -1,0 +1,6 @@
+---
+- import_tasks: tools.yml
+  tags: tools
+- import_tasks: hooks.yml
+  tags: hooks
+- import_tasks: conf.yml

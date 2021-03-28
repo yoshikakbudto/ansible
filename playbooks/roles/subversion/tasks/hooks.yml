@@ -1,0 +1,19 @@
+---
+# define all variables in ../vars/main.yml
+# manage hook scripts in ../files/hooks/*
+
+- name: rsync _shared_scripts_
+  synchronize:
+    src: "hooks/_shared_scripts_/"
+    dest: "{{ repos_home }}/_shared_scripts_/"
+    delete: yes
+    rsync_opts: "{{ rsync_args }}"
+
+
+- name: sync hooks
+  synchronize:
+    src: "hooks/{{ item }}/"
+    dest: "{{ repos_home }}/{{ item }}/hooks/"
+    delete: yes
+    rsync_opts: "{{ rsync_args }}"
+  loop: "{{ repo_list }}"

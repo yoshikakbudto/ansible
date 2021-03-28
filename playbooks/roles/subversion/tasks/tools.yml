@@ -1,0 +1,20 @@
+---
+# define all variables in ../vars/main.yml
+# manage hook scripts in ../files/hooks/*
+
+- name: ensure {{ tools_home }} exists
+  file:
+    path: "{{ tools_home }}"
+    state: directory
+    mode: '0755'
+
+- name: rsync {{ tools_home }}
+  synchronize:
+    src: "tools/"
+    dest: "{{ tools_home }}/"
+    delete: yes
+    rsync_opts: "{{ rsync_args }}"
+
+- name: Install authz tool python requirements
+  pip:
+    requirements: "{{ tools_home }}/authz/requirements.txt"

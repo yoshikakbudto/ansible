@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# $1 is a repo path
+export LANG=C.UTF-8
+export LC_ALL=C.UTF-8
+python3 -u $1/../_shared_scripts_/post_commit_tasks.py $*

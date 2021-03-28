@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+'''subversion pre-commit hook script
+
+The script logs some info about successfull and failed transactions
+to the size-capped txt.log file
+'''
+import atexit
+import sys
+import os
+
+#
+# Define here all tests you need.
+#
+def run_checks(f):
+    """Apply all filters we need for a given repo."""
+
+    # define default paths with default_filter_paths to wich filters apply.
+    # you can redefine it with paths parameter
+    # also you can exclude some paths with exclude_paths
+    f.default_filter_paths = ('/work_version/pc/data/', '/art/source/',)
+
+    f.check_comment_len()
+
+    f.check_filenames_len()
+    f.check_filepath_validchars()
+
+    f.check_locase(paths=('/art/source/',),
+                   extensions=('.dae', '.tif', '.tga', '.png',),
+                   exclude_paths=('/previewer/',))
+
+    f.check_banned_path_patterns()
+
+    f.check_unicode_content()
+
+    f.check_lua()
+
+
+
+# include search paths for custom modules.
+sys.path.insert(1, os.path.dirname(os.path.realpath(__file__)) + '/../_shared_scripts_')
+sys.path.insert(1, os.path.dirname(os.path.realpath(__file__)) + '/../../_shared_scripts_')
+
+# Enable logging
+from logsystem import Logging
+LOG = Logging()
+LOG.enable_console(formatter="[%(levelname)s] %(message)s", level="info")
+LOG.enable_file(os.path.join(os.path.dirname(sys.argv[0]), "txn.log"), level="debug", maxbytes=64*1024, backupcount=1)
+
+@atexit.register
+def close_log_handlers():
+    """Close all of the logging handlers."""
+    LOG.close()
+
+from filter_engine import Filters
+
+
+def log_metainfo(f):
+    """Write basic commit info to logfile."""
+    changelist = ''
+    for op, fname in f.data["revision_files"]:
+        changelist += f"{op}  {fname}\n"
+
+
+    s = f"""
+    ------------------------------------------------------------------------------
+    Repository:  {f.data["repos"]}
+    Transaction: {f.data["txn"]}
+    Revision: {f.data["revision"]}
+
+    Info:
+    {f.data["info"]}
+
+    Files changed:
+    {changelist}
+
+    Dirs changed:
+    {f.data["dirs_changed"]}
+    """
+    LOG.debug(s)
+
+
+def charm_exit(f):
+    """Exit with output all failed filters errors."""
+
+    for error in f.errors:
+        LOG.error(error)
+
+    if r'[pass-commit]' in f.data["log_msg"]:
+        LOG.warn("found [pass-commit] tag. Accepting commit as-is")
+        return
+
+    if f.errors:
+        sys.exit(1)
+
+    LOG.info("Commit accepted")
+
+
+if __name__ == "__main__":
+    f = Filters()
+    log_metainfo(f)
+    run_checks(f)
+    charm_exit(f)

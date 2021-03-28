@@ -1,0 +1,30 @@
+---
+
+repos_home: /mnt/svn
+
+tools_home: "{{ repos_home }}/_tools_"
+
+# when true, show commands output (with sensitive data)
+debugmode: false
+
+repo_list:
+  - repo1
+
+rsync_args:
+  - "--no-motd"
+  - "--exclude=*.log"
+  - "--exclude=*.log.*"
+  - "--exclude=*.pyc"
+  - "--exclude=__pycache__"
+  - "--chown=builduser"
+  - "--chmod=D755,F555"
+
+
+hooks_env_codepage: C.UTF-8
+
+tool_authz_dryrun: false
+
+vault_ldapuser_token: "undefined"
+tools_authz_bind_dn: "CN=ldapuser,CN=Users,DC=corp,DC=local"
+tool_authz_bindpass: "{{ lookup('hashi_vault', 'kv/data/creds/corp:ldapuser token={{ vault_ldapuser_token }} url=https://vault.corp.ru') }}"
+

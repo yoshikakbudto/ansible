@@ -1,0 +1,93 @@
+%YAML 1.1
+---
+# utf-8
+#  
+# Крайне важно соблюдать отступы - они задают структуру
+#   Здесь можно конфигурить параметры, инициируемые в Config.py => CONFIG --
+#     с соблюдением структуры конечно же
+#
+# Параметры, заданные здесь могут быть переписаны:
+#  - переменными окружения  (список поддерживаемых: Config.py => SUPPORTED_ENV)
+#  - параметрами ком.строки (наивысший приоритет)
+#
+ldap:
+  url:          'corp.local'
+  bind_dn:      'CN=ldapuser,CN=Users,DC=corp,DC=local'
+  search_dn:    'dc=corp,dc=local'
+  group_traversal: True # -- non implemented yet -- 
+
+
+svn:
+    repos_root:   '/home/svn'
+#
+# В ветке access перечисляются имена репозиториев и доступы к ним
+#   ветка "default" применяется когда имя репозитория не сконфигурено.
+#
+# Дефолтные значения
+#  perms: 'r'
+#  EVERYONE: ''
+#
+    access:
+        default:
+            DEFAULT_GROUP: 'rw'
+
+            syncuser:
+                type: user
+
+            builduser:
+                type: user
+
+            BUILDBOT:
+                type: user
+                perms: 'rw'
+            buildbot:
+                type: user
+                perms: 'rw'
+
+            devops:
+                type: group
+                perms: 'rw'
+
+
+        shared: # пермишны для svn://shared
+            svn-shared:
+                type: group
+                perms: 'rw'
+
+            devops:
+                type: group
+                perms: 'rw'
+
+            BUILDBOT:
+                type: user
+                perms: 'rw'
+            buildbot:
+                type: user
+                perms: 'rw'
+
+            EVERYONE: 'r'
+
+        repo5:
+                DEFAULT_GROUP: 'rw'
+
+                syncuser:
+                    type: user
+
+                builduser:
+                    type: user
+
+                BUILDBOT:
+                    type: user
+                    perms: 'rw'
+                buildbot:
+                    type: user
+                    perms: 'rw'
+                        
+                devops:
+                    type: group
+                    perms: 'rw'
+        
+                svn-xom-vpn:
+                    type: group
+                    perms: 'r'
+...

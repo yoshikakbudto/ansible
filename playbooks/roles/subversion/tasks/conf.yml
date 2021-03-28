@@ -1,0 +1,48 @@
+---
+# define all variables in ../vars/main.yml
+# manage template in ../templates/*
+
+- name: manage ./conf/hooks-env
+  template:
+    src: hooks-env.j2
+    dest: "{{ repos_home }}/{{ item }}/conf/hooks-env"
+    owner: builduser
+    mode: '0644'
+  loop: "{{ repo_list }}"
+  tags:
+  - hooks
+  - hooks-env
+
+
+- name: Requere tool_authz_bindpass to be defined
+  fail:
+    msg: tool_authz_bindpass have to be defined
+  when: tool_authz_bindpass is undefined
+
+
+- name: update ./conf/authz
+  vars:
+    dryrun: "{{ '--dry-run' if tool_authz_dryrun else '' }}"
+  command:
+    chdir: "{{ tools_home }}/authz"
+    cmd: "/usr/bin/python ldap2svnAuthz.py -b {{ tools_authz_bind_dn }} -p {{ tool_authz_bindpass }} --repos-root {{ repos_home }} -r {{ item }} {{ dryrun }}"
+  loop: "{{ repo_list }}"
+  register: authz_tool_out
+  no_log: "{{ not debugmode }}"
+  tags:
+  - authz
+  - pass_linter
+
+
+- name: authz tool debug output
+  when: not ansible_check_mode
+  no_log: "{{ not debugmode }}"
+  debug:
+    msg:
+    - "{{ item.stdout_lines }}"
+    - "{{ item.stderr_lines }}"
+  loop: "{{ authz_tool_out.results }}"
+  tags:
+  - authz
+
+
